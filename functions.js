@@ -2,13 +2,13 @@ const User = require('./models').User;
 const shortid = require('shortid');
 
 //create username and shortid function
-exports.createUser = (req, res, next) => {
+exports.createUser = function(req, res, next) {
   const new_user = req.body.username;
   if(new_user) {
-    User.findOne({username: new_user}, (err, data) => {
+    User.findOne({username: new_user}, function(err, data) {
       if(err) next(err);
       if(data) {
-        next({status: 400, message: ' this username already exists'});
+        next({status: 400, message: 'username already exists'});
       } else {
         let user = new User({ username: new_user, _id: shortid.generate() });
         user.save(function(err, data) {
@@ -18,19 +18,19 @@ exports.createUser = (req, res, next) => {
       }
     });
   } else {
-    next({status: 400, message: 'the username given'});
+    next({status: 400, message: 'no username given'});
   }
 }
 
 //add function
-exports.add = (req, res, next) => {
+exports.add = function(req, res, next) {
   let user_id = req.body.userId,
       description = req.body.description,
       duration = req.body.duration,
       date = req.body.date ? new Date(req.body.date) : new Date()
   
   if(req.body.userId) {
-    User.findOne({_id: user_id}, (err, data) => {
+    User.findOne({_id: user_id}, function(err, data) {
       if(err) next(err);
         if(!data || data._id !== user_id) {
           next({status: 400, message: 'no valid ID exists'});
@@ -40,7 +40,7 @@ exports.add = (req, res, next) => {
                       {upsert: true, new: true},
                       function(err, data) {
             if(err) next(err);
-            if(!data) { next({status: 400, message: 'the ID does not exits'}) }
+            if(!data) { next({status: 400, message: 'no valid ID exits'}) }
             else { res.json({
               username: data.username,
               _id: data._id,
@@ -59,9 +59,9 @@ exports.add = (req, res, next) => {
 }
 
 //get all users and ids
-exports.users = (req, res, next) => {
+exports.users = function(req, res, next) {
   var projections = { log: false };
-  User.find({}, projections, (err, data) => {
+  User.find({}, projections, function(err, data) {
     if(err) next(err);
     res.json(data);
   });
@@ -69,9 +69,9 @@ exports.users = (req, res, next) => {
 
 
 //get parts of the log
-exports.log = (req, res, next) => {
+exports.log = function(req, res, next) {
   
-  User.findOne({_id: req.query.userId}, (err, user) => {
+  User.findOne({_id: req.query.userId}, function(err, user) {
     if(err) return next(err);
     if(!user) {
       next({status:400, message: 'incorrect ID given'});
